@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String, Text, Enum as SQLEnum
-from enum import Enum
+from sqlalchemy import Column, String, Text, Enum
+import enum
 from app.models.base import BaseModel
 
-class ContactType(str, Enum):
+class ContactType(str, enum.Enum):
     CLIENT = "client"
     VENDOR = "vendor"
     PARTNER = "partner"
@@ -14,7 +14,7 @@ class Contact(BaseModel):
     
     name = Column(String(100), nullable=False)
     company = Column(String(100))
-    contact_type = Column(SQLEnum(ContactType), default=ContactType.CLIENT)
+    contact_type = Column(Enum(ContactType), default=ContactType.CLIENT)
     email = Column(String(100))
     phone = Column(String(20))
     alternate_phone = Column(String(20))

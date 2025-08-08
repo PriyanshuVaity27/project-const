@@ -1,9 +1,10 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Enum as SQLEnum, Numeric
+from sqlalchemy import Column, String, Text, ForeignKey, Enum, Numeric
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from enum import Enum
+import enum
 from app.models.base import BaseModel
 
-class LeadStatus(str, Enum):
+class LeadStatus(str, enum.Enum):
     NEW = "new"
     CONTACTED = "contacted"
     QUALIFIED = "qualified"
@@ -12,7 +13,7 @@ class LeadStatus(str, Enum):
     CLOSED_WON = "closed_won"
     CLOSED_LOST = "closed_lost"
 
-class LeadSource(str, Enum):
+class LeadSource(str, enum.Enum):
     WEBSITE = "website"
     REFERRAL = "referral"
     SOCIAL_MEDIA = "social_media"
@@ -27,14 +28,14 @@ class Lead(BaseModel):
     email = Column(String(100))
     phone = Column(String(20))
     company = Column(String(100))
-    status = Column(SQLEnum(LeadStatus), default=LeadStatus.NEW)
-    source = Column(SQLEnum(LeadSource), default=LeadSource.WEBSITE)
+    status = Column(Enum(LeadStatus), default=LeadStatus.NEW)
+    source = Column(Enum(LeadSource), default=LeadSource.WEBSITE)
     budget = Column(Numeric(12, 2))
     requirements = Column(Text)
     notes = Column(Text)
     
     # Foreign Keys
-    assigned_employee_id = Column(Integer, ForeignKey("employees.id"))
+    assigned_employee_id = Column(UUID(as_uuid=True), ForeignKey("employees.id"))
     
     # Relationships
     assigned_employee = relationship("Employee", back_populates="assigned_leads")

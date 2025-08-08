@@ -1,9 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum as SQLEnum, Numeric, Boolean
+from sqlalchemy import Column, String, ForeignKey, Enum, Numeric, Boolean, Integer
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from enum import Enum
+import enum
 from app.models.base import BaseModel
 
-class PropertyType(str, Enum):
+class PropertyType(str, enum.Enum):
     APARTMENT = "apartment"
     VILLA = "villa"
     PLOT = "plot"
@@ -11,7 +12,7 @@ class PropertyType(str, Enum):
     SHOP = "shop"
     WAREHOUSE = "warehouse"
 
-class InventoryStatus(str, Enum):
+class InventoryStatus(str, enum.Enum):
     AVAILABLE = "available"
     SOLD = "sold"
     RESERVED = "reserved"
@@ -21,8 +22,8 @@ class InventoryItem(BaseModel):
     __tablename__ = "inventory"
     
     unit_number = Column(String(50), nullable=False)
-    property_type = Column(SQLEnum(PropertyType), nullable=False)
-    status = Column(SQLEnum(InventoryStatus), default=InventoryStatus.AVAILABLE)
+    property_type = Column(Enum(PropertyType), nullable=False)
+    status = Column(Enum(InventoryStatus), default=InventoryStatus.AVAILABLE)
     floor = Column(String(10))
     area = Column(Numeric(10, 2))
     price = Column(Numeric(12, 2))
@@ -34,7 +35,7 @@ class InventoryItem(BaseModel):
     description = Column(String(500))
     
     # Foreign Keys
-    project_id = Column(Integer, ForeignKey("projects.id"))
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"))
     
     # Relationships
     project = relationship("Project", back_populates="inventory_items")

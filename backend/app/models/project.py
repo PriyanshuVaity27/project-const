@@ -1,15 +1,16 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Enum as SQLEnum, Numeric, Date
+from sqlalchemy import Column, String, Text, ForeignKey, Enum, Numeric, Date, Integer
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from enum import Enum
+import enum
 from app.models.base import BaseModel
 
-class ProjectType(str, Enum):
+class ProjectType(str, enum.Enum):
     RESIDENTIAL = "residential"
     COMMERCIAL = "commercial"
     MIXED_USE = "mixed_use"
     INDUSTRIAL = "industrial"
 
-class ProjectStatus(str, Enum):
+class ProjectStatus(str, enum.Enum):
     PLANNING = "planning"
     UNDER_CONSTRUCTION = "under_construction"
     COMPLETED = "completed"
@@ -19,8 +20,8 @@ class Project(BaseModel):
     __tablename__ = "projects"
     
     name = Column(String(200), nullable=False)
-    project_type = Column(SQLEnum(ProjectType), nullable=False)
-    status = Column(SQLEnum(ProjectStatus), default=ProjectStatus.PLANNING)
+    project_type = Column(Enum(ProjectType), nullable=False)
+    status = Column(Enum(ProjectStatus), default=ProjectStatus.PLANNING)
     location = Column(String(200))
     address = Column(Text)
     total_area = Column(Numeric(12, 2))
@@ -34,7 +35,7 @@ class Project(BaseModel):
     amenities = Column(Text)
     
     # Foreign Keys
-    developer_id = Column(Integer, ForeignKey("developers.id"))
+    developer_id = Column(UUID(as_uuid=True), ForeignKey("developers.id"))
     
     # Relationships
     developer = relationship("Developer", back_populates="projects")

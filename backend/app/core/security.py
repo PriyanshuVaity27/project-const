@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
-
+from supabase import Client
 from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -25,7 +25,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
-def verify_token(token: str) -> dict:
+def verify_token(token: str) -> Dict[str, Any]:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
@@ -35,3 +35,42 @@ def verify_token(token: str) -> dict:
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+def authenticate_with_supabase(supabase: Client, email: str, password: str) -> Optional[Dict]:
+    """Authenticate user with Supabase Auth"""
+    try:
+        response = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+        
+        if response.user:
+            return {
+                "user": response.user,
+                "session": response.session
+            }
+        return None
+        
+    except Exception as e:
+        return None
+
+def create_user_with_supabase(supabase: Client, email: str, password: str, metadata: Dict = None) -> Optional[Dict]:
+    """Create user with Supabase Auth"""
+    try:
+        response = supabase.auth.sign_up({
+            "email": email,
+            "password": password,
+            "options": {
+                "data": metadata or {}
+            }
+        })
+        
+        if response.user:
+            return {
+                "user": response.user,
+                "session": response.session
+            }
+        return None
+        
+    except Exception as e:
+        return None

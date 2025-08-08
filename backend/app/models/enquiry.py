@@ -1,15 +1,16 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Enum as SQLEnum, Numeric
+from sqlalchemy import Column, String, Text, ForeignKey, Enum, Numeric
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from enum import Enum
+import enum
 from app.models.base import BaseModel
 
-class EnquiryStatus(str, Enum):
+class EnquiryStatus(str, enum.Enum):
     OPEN = "open"
     IN_PROGRESS = "in_progress"
     RESOLVED = "resolved"
     CLOSED = "closed"
 
-class EnquiryType(str, Enum):
+class EnquiryType(str, enum.Enum):
     PURCHASE = "purchase"
     RENTAL = "rental"
     INVESTMENT = "investment"
@@ -19,8 +20,8 @@ class Enquiry(BaseModel):
     __tablename__ = "enquiries"
     
     subject = Column(String(200), nullable=False)
-    enquiry_type = Column(SQLEnum(EnquiryType), default=EnquiryType.GENERAL)
-    status = Column(SQLEnum(EnquiryStatus), default=EnquiryStatus.OPEN)
+    enquiry_type = Column(Enum(EnquiryType), default=EnquiryType.GENERAL)
+    status = Column(Enum(EnquiryStatus), default=EnquiryStatus.OPEN)
     customer_name = Column(String(100))
     customer_email = Column(String(100))
     customer_phone = Column(String(20))
@@ -31,7 +32,7 @@ class Enquiry(BaseModel):
     response = Column(Text)
     
     # Foreign Keys
-    assigned_employee_id = Column(Integer, ForeignKey("employees.id"))
+    assigned_employee_id = Column(UUID(as_uuid=True), ForeignKey("employees.id"))
     
     # Relationships
-    assigned_employee = relationship("Employee")
+    assigned_employee = relationship("Employee", back_populates="assigned_enquiries")

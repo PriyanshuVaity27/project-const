@@ -1,22 +1,18 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 import logging
 
-from app.api.routes import auth, employees, leads, developers, projects, inventory, land_parcels, contacts, enquiries
+from app.api.routes import auth, employees, leads, developers, projects, inventory, land_parcels, contacts, enquiries, files
 from app.core.config import settings
-from app.database import engine, Base
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title="Real Estate CRM API",
-    description="A comprehensive real estate management system",
+    description="A comprehensive real estate management system with Supabase integration",
     version="1.0.0",
 )
 
@@ -39,11 +35,16 @@ app.include_router(inventory.router, prefix="/api/inventory", tags=["Inventory"]
 app.include_router(land_parcels.router, prefix="/api/land-parcels", tags=["Land Parcels"])
 app.include_router(contacts.router, prefix="/api/contacts", tags=["Contacts"])
 app.include_router(enquiries.router, prefix="/api/enquiries", tags=["Enquiries"])
+app.include_router(files.router, prefix="/api/files", tags=["Files"])
 
 @app.get("/")
 async def root():
-    return {"message": "Real Estate CRM API", "version": "1.0.0"}
+    return {
+        "message": "Real Estate CRM API with Supabase", 
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {"status": "healthy", "database": "supabase"}

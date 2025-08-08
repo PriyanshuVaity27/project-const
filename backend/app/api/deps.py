@@ -2,12 +2,16 @@ from typing import Generator, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from supabase import Client
 from app.database import get_db
 from app.core.security import verify_token
-from app.crud.crud_employee import employee_crud
+from app.services.supabase_service import supabase_service
 from app.models.employee import Employee, UserRole
 
 security = HTTPBearer()
+
+def get_supabase() -> Client:
+    return supabase_service.supabase
 
 def get_current_user(
     db: Session = Depends(get_db),
@@ -16,14 +20,15 @@ def get_current_user(
     token = credentials.credentials
     payload = verify_token(token)
     
-    username: str = payload.get("sub")
-    if username is None:
+    user_id: str = payload.get("sub")
+    if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
     
-    user = employee_crud.get_by_username(db, username=username)
+    # Get user from employees table using user_id
+    user = db.query(Employee).filter(Employee.user_id == user_id).first()
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

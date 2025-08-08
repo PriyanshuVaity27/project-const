@@ -1,18 +1,32 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from app.models.employee import UserRole
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    username: str
+    full_name: str
+    role: UserRole = UserRole.EMPLOYEE
+    phone: Optional[str] = None
+    department: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
     token_type: str
-
-class TokenData(BaseModel):
-    username: str | None = None
+    user: "UserResponse"
 
 class UserResponse(BaseModel):
-    id: int
+    id: str
     username: str
-    email: str
     full_name: str
     role: str
+    phone: Optional[str] = None
+    department: Optional[str] = None
     is_active: bool
     
     class Config:
